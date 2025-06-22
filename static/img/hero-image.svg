@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="600" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+    <!-- Background Pattern -->
+    <defs>
+        <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+        </pattern>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#grid)"/>
+    
+    <!-- Abstract Shapes -->
+    <circle cx="600" cy="300" r="150" fill="rgba(255,255,255,0.1)"/>
+    <circle cx="650" cy="250" r="100" fill="rgba(255,255,255,0.05)"/>
+    
+    <!-- Face Recognition Elements -->
+    <rect x="250" y="150" width="300" height="300" rx="20" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="4"/>
+    <circle cx="400" cy="250" r="50" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="4"/>
+    <path d="M 350 350 Q 400 400 450 350" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="4"/>
+    
+    <!-- Grid Points -->
+    <g fill="rgba(255,255,255,0.6)">
+        <circle cx="320" cy="220" r="3"/>
+        <circle cx="480" cy="220" r="3"/>
+        <circle cx="350" cy="280" r="3"/>
+        <circle cx="450" cy="280" r="3"/>
+        <circle cx="400" cy="320" r="3"/>
+    </g>
+    
+    <!-- Connection Lines -->
+    <g stroke="rgba(255,255,255,0.2)" stroke-width="2">
+        <line x1="320" y1="220" x2="480" y2="220"/>
+        <line x1="350" y1="280" x2="450" y2="280"/>
+        <line x1="320" y1="220" x2="350" y2="280"/>
+        <line x1="480" y1="220" x2="450" y2="280"/>
+        <line x1="350" y1="280" x2="400" y2="320"/>
+        <line x1="450" y1="280" x2="400" y2="320"/>
+    </g>
+</svg>
