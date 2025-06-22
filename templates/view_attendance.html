@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+    <!-- Analytics Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm text-center">
+                <div class="card-body">
+                    <div class="display-5 mb-2">✅</div>
+                    <h5 class="card-title">Total Students</h5>
+                    <div class="fs-3 fw-bold">{{ total_students or 0 }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm text-center">
+                <div class="card-body">
+                    <div class="display-5 mb-2 text-success">🟢</div>
+                    <h5 class="card-title">Attendance % This Month</h5>
+                    <div class="fs-3 fw-bold">{{ attendance_percent or 0 }}%</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm text-center">
+                <div class="card-body">
+                    <div class="display-5 mb-2 text-danger">🔴</div>
+                    <h5 class="card-title">Absent Today</h5>
+                    <div class="fs-3 fw-bold">{{ absent_today or 0 }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm text-center">
+                <div class="card-body">
+                    <div class="display-5 mb-2 text-info">📸</div>
+                    <h5 class="card-title">Image Accuracy %</h5>
+                    <div class="fs-3 fw-bold">{{ image_accuracy or 0 }}%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-chart-bar fa-2x me-3"></i>
+                    <div>
+                        <h3 class="mb-0">Attendance Overview</h3>
+                        <p class="mb-0 opacity-75">View and analyze attendance records</p>
+                    </div>
+                </div>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-light">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <div class="card-body p-4">
+            {% if grouped_attendance %}
+                {% for date, records in grouped_attendance.items() %}
+                <div class="attendance-section mb-4">
+                    <div class="date-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h4 class="mb-0">
+                                <i class="fas fa-calendar-day me-2"></i>{{ date }}
+                            </h4>
+                            <div class="attendance-stats">
+                                {% set present_count = records|selectattr('status', 'eq', 'Present')|list|length %}
+                                {% set total_count = records|length %}
+                                {% set percentage = (present_count / total_count * 100)|round|int %}
+                                <div class="d-flex align-items-center">
+                                    <div class="attendance-progress me-3">
+                                        <div class="progress">
+                                            <div class="progress-bar bg-success" 
+                                                 role="progressbar" 
+                                                 data-percentage="{{ percentage }}" 
+                                                 aria-valuenow="{{ present_count }}" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="{{ total_count }}">
+                                                {{ percentage }}%
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">{{ percentage }}% Present</small>
+                                    </div>
+                                    <span class="badge bg-success me-2" title="Present">
+                                        <i class="fas fa-user-check me-1"></i>{{ present_count }}
+                                    </span>
+                                    <span class="badge bg-danger" title="Absent">
+                                        <i class="fas fa-user-times me-1"></i>{{ total_count - present_count }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive mt-3">
+                        <table class="table table-hover align-middle">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>Roll Number</th>
+                                    <th>Student Name</th>
+                                    <th>Status</th>
+                                    <th>Method</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in records %}
+                                <tr>
+                                    <td>
+                                        <span class="fw-medium">{{ record.roll_no }}</span>
+                                    </td>
+                                    <td>{{ record.name }}</td>
+                                    <td>
+                                        {% if record.status == 'Present' %}
+                                        <span class="badge bg-success-subtle text-success px-3 py-2">
+                                            <i class="fas fa-check me-1"></i>Present
+                                        </span>
+                                        {% else %}
+                                        <span class="badge bg-danger-subtle text-danger px-3 py-2">
+                                            <i class="fas fa-times me-1"></i>Absent
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if record.source == 'manual' %}
+                                        <span class="badge bg-primary-subtle text-primary px-3 py-2">
+                                            <i class="fas fa-clipboard-check me-1"></i>Manual
+                                        </span>
+                                        {% else %}
+                                        <span class="badge bg-info-subtle text-info px-3 py-2">
+                                            <i class="fas fa-camera me-1"></i>Image
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">No Attendance Records</h4>
+                <p class="mb-4">Start marking attendance to see records here</p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="{{ url_for('mark_attendance_manual') }}" class="btn btn-primary">
+                        <i class="fas fa-clipboard-check me-2"></i>Mark Manual
+                    </a>
+                    <a href="{{ url_for('mark_attendance_image') }}" class="btn btn-info">
+                        <i class="fas fa-camera me-2"></i>Mark with Image
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if grouped_attendance %}
+        <div class="card-footer bg-light p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="text-muted">
+                    <i class="fas fa-calendar-check me-2"></i>Total Days: {{ grouped_attendance|length }}
+                </div>
+                <button class="btn btn-primary" onclick="window.print()">
+                    <i class="fas fa-print me-2"></i>Print Report
+                </button>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .attendance-section {
+        background-color: white;
+        border-radius: 10px;
+        border: 1px solid #e9ecef;
+        overflow: hidden;
+    }
+
+    .date-header {
+        padding: 1rem;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .date-header h4 {
+        color: var(--primary-color);
+        font-weight: 600;
+    }
+
+    .attendance-progress {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .progress {
+        border-radius: 10px;
+        background-color: #e9ecef;
+    }
+
+    .badge {
+        font-weight: 500;
+    }
+
+    .bg-success-subtle {
+        background-color: rgba(25, 135, 84, 0.1);
+    }
+
+    .bg-danger-subtle {
+        background-color: rgba(220, 53, 69, 0.1);
+    }
+
+    .bg-primary-subtle {
+        background-color: rgba(13, 110, 253, 0.1);
+    }
+
+    .bg-info-subtle {
+        background-color: rgba(13, 202, 240, 0.1);
+    }
+
+    .table > :not(caption) > * > * {
+        padding: 1rem;
+    }
+
+    @media print {
+        .btn, .card-header, .card-footer {
+            display: none !important;
+        }
+        
+        .card {
+            box-shadow: none !important;
+            border: none !important;
+        }
+
+        .badge {
+            border: 1px solid currentColor !important;
+        }
+
+        .progress {
+            border: 1px solid #dee2e6 !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const progressBars = document.querySelectorAll('.progress-bar');
+    progressBars.forEach(function(bar) {
+        const percentage = bar.getAttribute('data-percentage');
+        bar.style.width = percentage + '%';
+    });
+});
+</script>
+{% endblock %}

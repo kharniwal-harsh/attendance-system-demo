@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+    <h1>Students</h1>
+    <form method="get" action="{{ url_for('view_students') }}">
+        <label for="class_id">Filter by Class:</label>
+        <select name="class_id" id="class_id" class="form-select">
+            <option value="">All Classes</option>
+            {% for class in classes %}
+            <option value="{{ class._id }}" {% if selected_class == class._id %}selected{% endif %}>
+                {{ class.name }}
+            </option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-primary mt-2">Filter</button>
+    </form>
+    <table class="table table-bordered mt-4">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Roll Number</th>
+                <th>Class</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in students %}
+            <tr>
+                <td>{{ student.name }}</td>
+                <td>{{ student.roll_no }}</td>
+                <td>{{ student.class_name }}</td>
+                <td>
+                    <form method="post" action="{{ url_for('delete_student', student_id=student._id) }}">
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

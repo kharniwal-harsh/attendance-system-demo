@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+    <h1>Attendance for {{ class_name }}</h1>
+    <p>Date: {{ date }}</p>
+    <p>Time: {{ time }}</p>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Roll Number</th>
+                <th>Student Name</th>
+                <th>Status</th>
+                <th>Method</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in records %}
+            <tr>
+                <td>{{ record.roll_no }}</td>
+                <td>{{ record.name }}</td>
+                <td>
+                    {% if record.status == 'Present' %}
+                    <span class="badge bg-success">Present</span>
+                    {% else %}
+                    <span class="badge bg-danger">Absent</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if record.source == 'manual' %}
+                    Manual
+                    {% else %}
+                    Image
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,372 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="animated-background"></div>
+<div class="auth-wrapper">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header text-center">
+                <div class="auth-logo">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <h2>Create Account</h2>
+                <p class="text-muted">Register as a new teacher</p>
+            </div>
+
+            <div class="auth-body">
+                <form method="POST" action="{{ url_for('register') }}" class="needs-validation" novalidate>
+                    {% with messages = get_flashed_messages() %}
+                        {% if messages %}
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                {{ messages[0] }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endif %}
+                    {% endwith %}
+
+                    <div class="form-group mb-4">
+                        <label class="form-label">
+                            <i class="fas fa-user me-2"></i>Username
+                        </label>
+                        <input type="text" 
+                               name="username" 
+                               class="form-control form-control-lg" 
+                               required
+                               minlength="3"
+                               pattern="[a-zA-Z0-9]+"
+                               placeholder="Choose a username"
+                               autofocus>
+                        <div class="invalid-feedback">
+                            Username must be at least 3 characters (letters and numbers only)
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-4">
+                        <label class="form-label">
+                            <i class="fas fa-envelope me-2"></i>Email Address
+                        </label>
+                        <input type="email" 
+                               name="email" 
+                               class="form-control form-control-lg" 
+                               required
+                               placeholder="Enter your email">
+                        <div class="invalid-feedback">
+                            Please enter a valid email address
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-4">
+                        <label class="form-label">
+                            <i class="fas fa-lock me-2"></i>Password
+                        </label>
+                        <div class="input-group">
+                            <input type="password" 
+                                   name="password" 
+                                   id="password"
+                                   class="form-control form-control-lg" 
+                                   required
+                                   minlength="6"
+                                   placeholder="Create a password">
+                            <button class="btn btn-light" type="button" id="togglePassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="invalid-feedback">
+                            Password must be at least 6 characters long
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-4">
+                        <label class="form-label">
+                            <i class="fas fa-lock me-2"></i>Confirm Password
+                        </label>
+                        <div class="input-group">
+                            <input type="password" 
+                                   name="confirm_password" 
+                                   id="confirmPassword"
+                                   class="form-control form-control-lg" 
+                                   required
+                                   placeholder="Confirm your password">
+                            <button class="btn btn-light" type="button" id="toggleConfirmPassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="invalid-feedback">
+                            Passwords do not match
+                        </div>
+                    </div>
+
+                    <div class="password-requirements mb-4">
+                        <p class="text-muted small mb-2">Password must contain:</p>
+                        <div class="requirement" id="lengthReq">
+                            <i class="fas fa-circle"></i>
+                            <span>At least 6 characters</span>
+                        </div>
+                        <div class="requirement" id="numberReq">
+                            <i class="fas fa-circle"></i>
+                            <span>At least 1 number</span>
+                        </div>
+                        <div class="requirement" id="specialReq">
+                            <i class="fas fa-circle"></i>
+                            <span>At least 1 special character</span>
+                        </div>
+                    </div>
+
+                    <div class="d-grid mb-4">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-user-plus me-2"></i>Create Account
+                        </button>
+                    </div>
+
+                    <div class="text-center">
+                        <p class="mb-0">Already have an account?</p>
+                        <a href="{{ url_for('login') }}" class="btn btn-link text-primary">
+                            <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    body {
+        padding-top: 0 !important;
+        margin: 0;
+        overflow-x: hidden;
+    }
+
+    .animated-background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(45deg, #1565C0, #0D47A1, #1976D2);
+        background-size: 400% 400%;
+        animation: gradientBG 15s ease infinite;
+        z-index: -1;
+    }
+
+    .auth-wrapper {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+        position: relative;
+    }
+
+    .auth-container {
+        width: 100%;
+        max-width: 480px;
+        position: relative;
+    }
+
+    .auth-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 1rem;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        overflow: hidden;
+        transform: translateY(0);
+        transition: all 0.3s ease;
+    }
+
+    .auth-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+
+    .auth-logo {
+        width: 90px;
+        height: 90px;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 2.5rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        animation: float 3s ease-in-out infinite;
+    }
+
+    .auth-header {
+        padding: 2.5rem 2rem 1.5rem;
+    }
+
+    .auth-header h2 {
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 0.5rem;
+    }
+
+    .auth-body {
+        padding: 2rem;
+    }
+
+    .form-control {
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(21, 101, 192, 0.1);
+    }
+
+    .password-requirements {
+        background: rgba(248, 249, 250, 0.8);
+        backdrop-filter: blur(10px);
+        padding: 1.25rem;
+        border-radius: 12px;
+        border: 1px solid rgba(0,0,0,0.05);
+        margin-top: 1rem;
+    }
+
+    .requirement {
+        color: #6c757d;
+        font-size: 0.875rem;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .requirement:last-child {
+        margin-bottom: 0;
+    }
+
+    .requirement.valid {
+        color: #198754;
+    }
+
+    .requirement.invalid {
+        color: #dc3545;
+    }
+
+    .requirement i {
+        transition: transform 0.3s ease;
+    }
+
+    .requirement.valid i {
+        transform: scale(1.2);
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        border: none;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    }
+
+    @keyframes gradientBG {
+        0% {
+            background-position: 0% 50%;
+        }
+        50% {
+            background-position: 100% 50%;
+        }
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+
+    @keyframes float {
+        0% {
+            transform: translateY(0px);
+        }
+        50% {
+            transform: translateY(-10px);
+        }
+        100% {
+            transform: translateY(0px);
+        }
+    }
+
+    .alert {
+        border: none;
+        background: rgba(220, 53, 69, 0.1);
+        backdrop-filter: blur(10px);
+        color: #dc3545;
+    }
+
+    // ...existing code...
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const password = document.getElementById('password');
+    const confirmPassword = document.getElementById('confirmPassword');
+    const requirements = {
+        length: document.getElementById('lengthReq'),
+        number: document.getElementById('numberReq'),
+        special: document.getElementById('specialReq')
+    };
+
+    // Toggle password visibility
+    function setupPasswordToggle(inputId, toggleId) {
+        const input = document.getElementById(inputId);
+        const toggle = document.getElementById(toggleId);
+        
+        toggle.addEventListener('click', function() {
+            const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+            input.setAttribute('type', type);
+            toggle.querySelector('i').className = type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+        });
+    }
+
+    setupPasswordToggle('password', 'togglePassword');
+    setupPasswordToggle('confirmPassword', 'toggleConfirmPassword');
+
+    // Check password requirements
+    function updateRequirement(element, valid) {
+        element.classList.toggle('valid', valid);
+        element.classList.toggle('invalid', !valid);
+        element.querySelector('i').className = valid ? 'fas fa-check-circle' : 'fas fa-times-circle';
+    }
+
+    function validatePassword() {
+        const value = password.value;
+        updateRequirement(requirements.length, value.length >= 6);
+        updateRequirement(requirements.number, /\d/.test(value));
+        updateRequirement(requirements.special, /[!@#$%^&*]/.test(value));
+    }
+
+    password.addEventListener('input', validatePassword);
+
+    // Form validation
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity() || password.value !== confirmPassword.value) {
+            event.preventDefault();
+            event.stopPropagation();
+            if (password.value !== confirmPassword.value) {
+                confirmPassword.setCustomValidity('Passwords do not match');
+            }
+        }
+        form.classList.add('was-validated');
+    });
+
+    // Real-time password match validation
+    confirmPassword.addEventListener('input', function() {
+        this.setCustomValidity(password.value === this.value ? '' : 'Passwords do not match');
+    });
+
+    // Initialize password requirements
+    validatePassword();
+});
+</script>
+{% endblock %}

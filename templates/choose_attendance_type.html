@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-history fa-2x me-3"></i>
+                    <div>
+                        <h3 class="mb-0">View Attendance Records</h3>
+                        <p class="mb-0 opacity-75">Select class</p>
+                    </div>
+                </div>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-light">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <div class="card-body p-4">
+            <form method="POST" class="needs-validation" novalidate>
+                <!-- Class Selection -->
+                <div class="mb-4">
+                    <label class="form-label">
+                        <i class="fas fa-chalkboard-teacher me-2"></i>Select Class
+                    </label>
+                    <select name="class_id" class="form-select form-select-lg" required>
+                        <option value="">Choose a class...</option>
+                        {% for class in classes %}
+                        <option value="{{ class._id }}">{{ class.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="invalid-feedback">
+                        Please select a class
+                    </div>
+                </div>
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg px-5">
+                        <i class="fas fa-search me-2"></i>View Records
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .attendance-type-card {
+        height: 100%;
+    }
+
+    .attendance-type-label {
+        display: block;
+        height: 100%;
+        padding: 2rem;
+        border: 2px solid #dee2e6;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .attendance-type-label:hover {
+        border-color: var(--primary-color);
+        background-color: rgba(21, 101, 192, 0.05);
+    }
+
+    .btn-check {
+        display: none;
+    }
+
+    .btn-check:checked + .attendance-type-label {
+        border-color: var(--primary-color);
+        background-color: rgba(21, 101, 192, 0.1);
+    }
+
+    .btn-check:checked + .attendance-type-label i {
+        color: var(--primary-color);
+    }
+
+    .btn-check:checked + .attendance-type-label h4 {
+        color: var(--primary-color);
+    }
+
+    .attendance-type-label i {
+        color: #6c757d;
+        transition: all 0.3s ease;
+    }
+
+    .attendance-type-label:hover i {
+        transform: scale(1.1);
+    }
+</style>
+
+<script>
+// Form validation
+(function () {
+    'use strict'
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms)
+        .forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                form.classList.add('was-validated')
+            }, false)
+        })
+})()
+</script>
+{% endblock %}

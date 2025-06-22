@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-calendar-alt fa-2x me-3"></i>
+                    <div>
+                        <h3 class="mb-0">{{ class_name }} - Attendance Sessions</h3>
+                        <p class="mb-0 opacity-75">
+                            <i class="fas {{ 'fa-clipboard-check' if source == 'manual' else 'fa-camera' }} me-2"></i>
+                            {{ source|title }} Attendance Records
+                        </p>
+                    </div>
+                </div>
+                <a href="{{ url_for('view_attendance') }}" class="btn btn-light">
+                    <i class="fas fa-arrow-left me-2"></i>Back
+                </a>
+            </div>
+        </div>
+
+        <div class="card-body p-4">
+            {% if sessions %}
+                <div class="timeline">
+                    {% set current_date = '' %}
+                    {% for session in sessions %}
+                        {% if session._id.date != current_date %}
+                            {% if not loop.first %}</div>{% endif %}
+                            <div class="timeline-date">
+                                <i class="fas fa-calendar-day me-2"></i>{{ session._id.date }}
+                            </div>
+                            <div class="timeline-items">
+                            {% set current_date = session._id.date %}
+                        {% endif %}
+                        
+                        {% if class_id %}
+                        <a href="{{ url_for('view_attendance_session_all', date=session._id.date, time=session._id.time, class_id=class_id) }}" class="timeline-item">
+                        {% else %}
+                        <a href="{{ url_for('view_attendance_session', source=source, date=session._id.date, time=session._id.time, class_id=request.view_args.class_id) }}" class="timeline-item">
+                        {% endif %}
+                            <div class="timeline-icon">
+                                <i class="fas {{ 'fa-clipboard-check' if source == 'manual' else 'fa-camera' }}"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">Attendance Record</h5>
+                                    <span class="time-badge">
+                                        <i class="fas fa-clock me-1"></i>{{ session._id.time }}
+                                    </span>
+                                    <form action="{{ url_for('delete_attendance_session', class_id=class_id or request.view_args.class_id, date=session._id.date, time=session._id.time) }}" method="POST" style="display:inline;">
+                                        <button type="submit" class="btn btn-danger btn-sm ms-2" onclick="return confirm('Delete all attendance records for this session?');">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                                <p class="text-muted mb-0">Click to view details</p>
+                            </div>
+                        </a>
+                    {% endfor %}
+                    </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">No Attendance Records</h4>
+                    <p class="mb-4">No {{ source }} attendance records found for this class</p>
+                    {% if source == 'manual' %}
+                        <a href="{{ url_for('mark_attendance_manual') }}" class="btn btn-primary">
+                            <i class="fas fa-clipboard-check me-2"></i>Mark Manual Attendance
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('mark_attendance_image') }}" class="btn btn-primary">
+                            <i class="fas fa-camera me-2"></i>Mark Image Attendance
+                        </a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+
+        {% if sessions %}
+        <div class="card-footer bg-light p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="text-muted">
+                    <i class="fas fa-history me-2"></i>Total Sessions: {{ sessions|length }}
+                </span>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .timeline {
+        position: relative;
+        padding: 0;
+    }
+
+    .timeline-date {
+        font-weight: 600;
+        color: var(--primary-color);
+        padding: 1rem 0;
+        position: relative;
+    }
+
+    .timeline-items {
+        position: relative;
+        padding-left: 30px;
+        border-left: 2px solid #e9ecef;
+        margin-bottom: 2rem;
+    }
+
+    .timeline-item {
+        position: relative;
+        padding: 1rem 1.5rem;
+        background: white;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+        display: block;
+        color: inherit;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: 1px solid #e9ecef;
+    }
+
+    .timeline-item:hover {
+        transform: translateX(5px);
+        background-color: #f8f9fa;
+        border-color: var(--primary-color);
+    }
+
+    .timeline-icon {
+        position: absolute;
+        left: -41px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 20px;
+        height: 20px;
+        background: var(--primary-color);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.75rem;
+    }
+
+    .timeline-content {
+        position: relative;
+    }
+
+    .time-badge {
+        background: rgba(21, 101, 192, 0.1);
+        color: var(--primary-color);
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    .timeline-item:hover .time-badge {
+        background: var(--primary-color);
+        color: white;
+    }
+</style>
+{% endblock %}

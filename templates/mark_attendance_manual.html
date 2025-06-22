@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-clipboard-check fa-2x me-3"></i>
+                    <div>
+                        <h3 class="mb-0">Manual Attendance</h3>
+                        <p class="mb-0 opacity-75">Mark attendance for your class</p>
+                    </div>
+                </div>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-light">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <div class="card-body p-4">
+            <!-- Class Selection -->
+            <div class="class-select mb-4">
+                <form method="GET" action="{{ url_for('mark_attendance_manual') }}" class="needs-validation" novalidate>
+                    <div class="row align-items-end">
+                        <div class="col-md-8">
+                            <label class="form-label">
+                                <i class="fas fa-chalkboard-teacher me-2"></i>Select Class
+                            </label>
+                            <select name="class_id" id="class_id" class="form-select form-select-lg" required onchange="this.form.submit()">
+                                <option value="">Choose a class...</option>
+                                {% for class in classes %}
+                                <option value="{{ class._id }}" {% if selected_class == class._id|string %}selected{% endif %}>
+                                    {{ class.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-primary btn-lg w-100">
+                                <i class="fas fa-sync-alt me-2"></i>Load Students
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            {% if selected_class %}
+                {% if students %}
+                <form method="POST" id="attendanceForm">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" id="selectAll">
+                                            <label class="form-check-label" for="selectAll">Present</label>
+                                        </div>
+                                    </th>
+                                    <th>Roll Number</th>
+                                    <th>Student Name</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for student in students %}
+                                <tr>
+                                    <td>
+                                        <div class="form-check">
+                                            <input type="checkbox" 
+                                                   class="form-check-input attendance-checkbox" 
+                                                   name="attendance" 
+                                                   value="{{ student.roll_no }}"
+                                                   id="student-{{ student.roll_no }}">
+                                        </div>
+                                    </td>
+                                    <td>{{ student.roll_no }}</td>
+                                    <td>{{ student.name }}</td>
+                                    <td>
+                                        <span class="status-badge badge bg-danger">Absent</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                        <div class="attendance-summary">
+                            <span class="badge bg-success me-2">
+                                <i class="fas fa-check me-1"></i>Present: <span id="presentCount">0</span>
+                            </span>
+                            <span class="badge bg-danger">
+                                <i class="fas fa-times me-1"></i>Absent: <span id="absentCount">{{ students|length }}</span>
+                            </span>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save me-2"></i>Save Attendance
+                        </button>
+                    </div>
+                </form>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">No Students in this Class</h4>
+                    <p class="mb-4">Start by adding students to this class</p>
+                    <a href="{{ url_for('register_student') }}" class="btn btn-primary">
+                        <i class="fas fa-user-plus me-2"></i>Register Student
+                    </a>
+                </div>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .class-select {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1.5rem;
+    }
+
+    .table > :not(caption) > * > * {
+        padding: 1rem;
+    }
+
+    .form-check-input {
+        width: 1.2rem;
+        height: 1.2rem;
+        cursor: pointer;
+    }
+
+    .status-badge {
+        font-size: 0.85rem;
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(21, 101, 192, 0.05);
+    }
+
+    .attendance-summary {
+        font-size: 1.1rem;
+    }
+
+    .attendance-summary .badge {
+        padding: 0.6rem 1rem;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAll = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('.attendance-checkbox');
+    const presentCount = document.getElementById('presentCount');
+    const absentCount = document.getElementById('absentCount');
+    const statusBadges = document.querySelectorAll('.status-badge');
+
+    function updateCounts() {
+        const checkedCount = document.querySelectorAll('.attendance-checkbox:checked').length;
+        presentCount.textContent = checkedCount;
+        absentCount.textContent = checkboxes.length - checkedCount;
+    }
+
+    function updateStatus(checkbox) {
+        const row = checkbox.closest('tr');
+        const badge = row.querySelector('.status-badge');
+        if (checkbox.checked) {
+            badge.textContent = 'Present';
+            badge.classList.remove('bg-danger');
+            badge.classList.add('bg-success');
+        } else {
+            badge.textContent = 'Absent';
+            badge.classList.remove('bg-success');
+            badge.classList.add('bg-danger');
+        }
+    }
+
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+                updateStatus(checkbox);
+            });
+            updateCounts();
+        });
+    }
+
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            updateStatus(this);
+            updateCounts();
+            selectAll.checked = [...checkboxes].every(c => c.checked);
+        });
+    });
+
+    // Initialize counts
+    updateCounts();
+});
+</script>
+{% endblock %}

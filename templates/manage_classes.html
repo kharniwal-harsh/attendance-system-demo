@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <!-- Create Class Card -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-lg h-100">
+                <div class="card-header bg-primary text-white p-4">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-plus-circle fa-2x me-3"></i>
+                        <div>
+                            <h3 class="mb-0">Create Class</h3>
+                            <p class="mb-0 opacity-75">Add a new class</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" action="{{ url_for('manage_classes') }}" class="needs-validation" novalidate>
+                        <div class="mb-4">
+                            <label class="form-label">
+                                <i class="fas fa-chalkboard me-2"></i>Class Name
+                            </label>
+                            <input type="text" 
+                                   class="form-control form-control-lg" 
+                                   name="class_name" 
+                                   required
+                                   placeholder="Enter class name">
+                            <div class="invalid-feedback">
+                                Please enter a class name
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-lg w-100">
+                            <i class="fas fa-plus-circle me-2"></i>Create Class
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Existing Classes Card -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow-lg h-100">
+                <div class="card-header bg-primary text-white p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-chalkboard-teacher fa-2x me-3"></i>
+                            <div>
+                                <h3 class="mb-0">Your Classes</h3>
+                                <p class="mb-0 opacity-75">Manage existing classes</p>
+                            </div>
+                        </div>
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-light">
+                            <i class="fas fa-arrow-left me-2"></i>Back
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    {% if classes %}
+                    <div class="class-list">
+                        {% for class in classes %}
+                        <div class="class-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="class-info">
+                                    <h4 class="mb-0">{{ class.name }}</h4>
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>Created: Today
+                                    </small>
+                                </div>
+                                <div class="class-actions">
+                                    <form action="{{ url_for('delete_class', class_id=class._id) }}" 
+                                          method="POST"
+                                          class="d-inline-block"
+                                          onsubmit="return confirm('Are you sure you want to delete {{ class.name }}? This action cannot be undone.');">
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            <i class="fas fa-trash-alt me-2"></i>Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-chalkboard fa-3x text-muted mb-3"></i>
+                        <h4 class="text-muted">No Classes Yet</h4>
+                        <p class="mb-0">Create your first class to get started</p>
+                    </div>
+                    {% endif %}
+                </div>
+                {% if classes %}
+                <div class="card-footer bg-light p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted">
+                            <i class="fas fa-layer-group me-2"></i>Total Classes: {{ classes|length }}
+                        </span>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .class-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .class-item {
+        padding: 1.5rem;
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+
+    .class-item:hover {
+        background-color: #fff;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+    }
+
+    .class-info h4 {
+        color: var(--primary-color);
+        font-weight: 600;
+    }
+
+    .btn-sm {
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+    }
+
+    .card-footer {
+        border-top: 1px solid rgba(0,0,0,0.05);
+    }
+
+    @media (max-width: 991.98px) {
+        .class-item {
+            padding: 1rem;
+        }
+    }
+</style>
+
+<script>
+// Form validation
+(function () {
+    'use strict'
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms)
+        .forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                form.classList.add('was-validated')
+            }, false)
+        })
+})()
+</script>
+{% endblock %}

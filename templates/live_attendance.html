@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-video fa-2x me-3"></i>
+                    <div>
+                        <h3 class="mb-0">Live Webcam Attendance</h3>
+                        <p class="mb-0 opacity-75">Mark attendance using webcam</p>
+                    </div>
+                </div>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-light">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <div class="card-body p-4">
+            <!-- Class Selection -->
+            <div class="class-select mb-4">
+                <form method="GET" action="{{ url_for('live_attendance') }}" class="needs-validation" novalidate>
+                    <div class="row align-items-end">
+                        <div class="col-md-8">
+                            <label class="form-label">
+                                <i class="fas fa-chalkboard-teacher me-2"></i>Select Class
+                            </label>
+                            <select name="class_id" id="class_id" class="form-select form-select-lg" required onchange="this.form.submit()">
+                                <option value="">Choose a class...</option>
+                                {% for class in classes %}
+                                <option value="{{ class._id }}" {% if selected_class == class._id|string %}selected{% endif %}>
+                                    {{ class.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-primary btn-lg w-100">
+                                <i class="fas fa-sync-alt me-2"></i>Load Class
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            {% if selected_class %}
+            <div class="webcam-container">
+                <div class="row mb-4">
+                    <div class="col-lg-8">
+                        <div class="video-container bg-light rounded">
+                            <video id="webcam" autoplay playsinline class="w-100 rounded"></video>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="recognition-status card h-100">
+                            <div class="card-body">
+                                <h5><i class="fas fa-user-check me-2"></i>Recognition Status</h5>
+                                <div id="recognizedStudents" class="mt-3">
+                                    <!-- Recognized students will appear here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <button id="startBtn" class="btn btn-success btn-lg me-2">
+                        <i class="fas fa-play me-2"></i>Start Recognition
+                    </button>
+                    <button id="stopBtn" class="btn btn-danger btn-lg me-2" style="display: none;">
+                        <i class="fas fa-stop me-2"></i>Stop Recognition
+                    </button>
+                    <button id="saveBtn" class="btn btn-primary btn-lg" disabled>
+                        <i class="fas fa-save me-2"></i>Save Attendance
+                    </button>
+                </div>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-video fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">Select a Class</h4>
+                <p class="mb-0">Choose a class to start webcam attendance</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.video-container {
+    position: relative;
+    min-height: 400px;
+    background: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #dee2e6;
+}
+
+.recognition-status {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+}
+
+.recognized-student {
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    background: #fff;
+    border-radius: 0.5rem;
+    border: 1px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.class-select {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 1.5rem;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let stream;
+    let isRecognizing = false;
+    const recognizedStudents = new Set();
+    const video = document.getElementById('webcam');
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const saveBtn = document.getElementById('saveBtn');
+    const recognizedList = document.getElementById('recognizedStudents');
+
+    async function startWebcam() {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = stream;
+        } catch (err) {
+            console.error('Error accessing webcam:', err);
+            alert('Could not access webcam. Please ensure it is connected and permissions are granted.');
+        }
+    }
+
+    function stopWebcam() {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            video.srcObject = null;
+        }
+    }
+
+    if (startBtn) {
+        startBtn.addEventListener('click', async function() {
+            await startWebcam();
+            startBtn.style.display = 'none';
+            stopBtn.style.display = 'inline-block';
+            saveBtn.disabled = false;
+            isRecognizing = true;
+            startRecognition();
+        });
+    }
+
+    if (stopBtn) {
+        stopBtn.addEventListener('click', function() {
+            stopWebcam();
+            stopBtn.style.display = 'none';
+            startBtn.style.display = 'inline-block';
+            isRecognizing = false;
+        });
+    }
+
+    if (saveBtn) {
+        saveBtn.addEventListener('click', async function() {
+            if (recognizedStudents.size === 0) {
+                alert('No students have been recognized yet.');
+                return;
+            }
+
+            const classId = document.getElementById('class_id').value;
+            const response = await fetch('/save_live_attendance', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    class_id: classId,
+                    recognized_students: Array.from(recognizedStudents)
+                })
+            });
+
+            if (response.ok) {
+                alert('Attendance saved successfully!');
+                window.location.href = '/dashboard';
+            } else {
+                alert('Error saving attendance. Please try again.');
+            }
+        });
+    }
+
+    async function startRecognition() {
+        const classId = document.getElementById('class_id').value;
+        
+        while (isRecognizing) {
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            
+            // Convert canvas to blob
+            const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg'));
+            const formData = new FormData();
+            formData.append('frame', blob);
+            formData.append('class_id', classId);
+
+            try {
+                const response = await fetch('/process_frame', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                
+                if (result.recognized_students) {
+                    result.recognized_students.forEach(student => {
+                        if (!recognizedStudents.has(student.roll_no)) {
+                            recognizedStudents.add(student.roll_no);
+                            updateRecognizedList(student);
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Error processing frame:', error);
+            }
+
+            // Wait a short period before processing the next frame
+            await new Promise(resolve => setTimeout(resolve, 500));
+        }
+    }
+
+    function updateRecognizedList(student) {
+        const div = document.createElement('div');
+        div.className = 'recognized-student';
+        div.innerHTML = `
+            <span><i class="fas fa-user-check text-success me-2"></i>${student.name} (${student.roll_no})</span>
+            <span class="badge bg-success">Present</span>
+        `;
+        recognizedList.appendChild(div);
+    }
+});
+</script>
+{% endblock %}

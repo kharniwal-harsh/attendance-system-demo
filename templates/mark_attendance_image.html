@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-camera fa-2x me-3"></i>
+                    <div>
+                        <h3 class="mb-0">Image-based Attendance</h3>
+                        <p class="mb-0 opacity-75">Mark attendance using class photos</p>
+                    </div>
+                </div>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-light">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <div class="card-body p-4">
+            <!-- Class Selection -->
+            <div class="class-select mb-4">
+                <form method="GET" action="{{ url_for('mark_attendance_image') }}" class="needs-validation" novalidate>
+                    <div class="row align-items-end">
+                        <div class="col-md-8">
+                            <label class="form-label">
+                                <i class="fas fa-chalkboard-teacher me-2"></i>Select Class
+                            </label>
+                            <select name="class_id" id="class_id" class="form-select form-select-lg" required onchange="this.form.submit()">
+                                <option value="">Choose a class...</option>
+                                {% for class in classes %}
+                                <option value="{{ class._id }}" {% if selected_class == class._id|string %}selected{% endif %}>
+                                    {{ class.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-primary btn-lg w-100">
+                                <i class="fas fa-sync-alt me-2"></i>Select Class
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            {% if selected_class %}
+            <form method="POST" enctype="multipart/form-data" id="uploadForm">
+                <input type="hidden" name="class_id" value="{{ selected_class }}">
+                
+                <div class="upload-container">
+                    <div class="upload-area" id="uploadArea">
+                        <input type="file" 
+                               name="class_photos" 
+                               id="fileInput" 
+                               accept="image/*" 
+                               multiple 
+                               required 
+                               class="file-input">
+                        <div class="upload-content">
+                            <i class="fas fa-cloud-upload-alt fa-3x mb-3 text-primary"></i>
+                            <h4>Upload Class Photos</h4>
+                            <p class="text-muted">Drag & drop photos here or click to browse</p>
+                            <p class="text-muted small">Maximum 5 photos allowed</p>
+                        </div>
+                    </div>
+
+                    <div class="preview-container mt-4" id="previewContainer">
+                        <h5 class="mb-3">
+                            <i class="fas fa-images me-2"></i>Selected Photos
+                        </h5>
+                        <div class="row g-3" id="imagePreview"></div>
+                    </div>
+                </div>
+
+                <div class="upload-actions mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg" id="submitBtn" disabled>
+                        <i class="fas fa-check-circle me-2"></i>Process Attendance
+                        <span class="spinner-border spinner-border-sm ms-2 d-none" id="submitSpinner"></span>
+                    </button>
+                </div>
+            </form>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-chalkboard-teacher fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">Select a Class</h4>
+                <p class="mb-0">Choose a class to mark attendance</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .class-select {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1.5rem;
+    }
+
+    .upload-container {
+        width: 100%;
+    }
+
+    .upload-area {
+        width: 100%;
+        min-height: 300px;
+        border: 2px dashed var(--primary-color);
+        border-radius: 10px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        background-color: #f8f9fa;
+    }
+
+    .upload-area:hover {
+        border-color: var(--secondary-color);
+        background-color: #fff;
+    }
+
+    .upload-area.dragover {
+        background-color: rgba(21, 101, 192, 0.05);
+        border-style: solid;
+    }
+
+    .file-input {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .upload-content {
+        text-align: center;
+        padding: 2rem;
+    }
+
+    .preview-container {
+        display: none;
+    }
+
+    .preview-image-container {
+        position: relative;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .preview-image {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+    }
+
+    .preview-remove {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background: rgba(255,255,255,0.9);
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: #dc3545;
+        transition: all 0.3s ease;
+    }
+
+    .preview-remove:hover {
+        background: #dc3545;
+        color: white;
+    }
+
+    .upload-actions {
+        display: flex;
+        justify-content: center;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const previewContainer = document.getElementById('previewContainer');
+    const imagePreview = document.getElementById('imagePreview');
+    const submitBtn = document.getElementById('submitBtn');
+    const submitSpinner = document.getElementById('submitSpinner');
+    const maxFiles = 5;
+    let currentFiles = [];
+
+    function updateSubmitButton() {
+        submitBtn.disabled = currentFiles.length === 0;
+    }
+
+    function createPreviewImage(file) {
+        const reader = new FileReader();
+        const col = document.createElement('div');
+        col.className = 'col-md-4';
+        
+        reader.onload = function(e) {
+            col.innerHTML = `
+                <div class="preview-image-container">
+                    <img src="${e.target.result}" class="preview-image" alt="Preview">
+                    <div class="preview-remove" data-name="${file.name}">
+                        <i class="fas fa-times"></i>
+                    </div>
+                </div>
+            `;
+        }
+        
+        reader.readAsDataURL(file);
+        return col;
+    }
+
+    function handleFiles(files) {
+        const allowedFiles = Array.from(files).slice(0, maxFiles);
+        currentFiles = allowedFiles;
+        
+        imagePreview.innerHTML = '';
+        allowedFiles.forEach(file => {
+            imagePreview.appendChild(createPreviewImage(file));
+        });
+        
+        previewContainer.style.display = allowedFiles.length > 0 ? 'block' : 'none';
+        updateSubmitButton();
+    }
+
+    // File Input Change
+    fileInput.addEventListener('change', function(e) {
+        handleFiles(e.target.files);
+    });
+
+    // Drag and Drop
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        });
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, function() {
+            uploadArea.classList.add('dragover');
+        });
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, function() {
+            uploadArea.classList.remove('dragover');
+        });
+    });
+
+    uploadArea.addEventListener('drop', function(e) {
+        handleFiles(e.dataTransfer.files);
+    });
+
+    // Remove Preview Image
+    imagePreview.addEventListener('click', function(e) {
+        if (e.target.closest('.preview-remove')) {
+            const fileName = e.target.closest('.preview-remove').dataset.name;
+            currentFiles = Array.from(currentFiles).filter(file => file.name !== fileName);
+            handleFiles(currentFiles);
+        }
+    });
+
+    // Form Submit
+    document.getElementById('uploadForm').addEventListener('submit', function() {
+        submitBtn.disabled = true;
+        submitSpinner.classList.remove('d-none');
+    });
+});
+</script>
+{% endblock %}

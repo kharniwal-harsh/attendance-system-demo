@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en" class="h-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance System</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #1565C0;
+            --secondary-color: #0D47A1;
+            --success-color: #198754;
+            --info-color: #0DCAF0;
+            --warning-color: #FFC107;
+            --danger-color: #DC3545;
+            --nav-height: 72px;
+            --dark-bg: #121212;
+            --dark-card: #1e1e1e;
+            --dark-input: #2d2d2d;
+            --dark-border: #333;
+            --dark-text: #e0e0e0;
+        }
+
+        body {
+            min-height: 100vh;
+            background-color: #f8f9fa;
+            padding-top: var(--nav-height);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .navbar {
+            height: var(--nav-height);
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-color) !important;
+        }
+
+        .nav-link {
+            font-weight: 500;
+            color: #495057;
+            position: relative;
+            padding: 0.5rem 1rem !important;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color);
+        }
+
+        .nav-link.active {
+            color: var(--primary-color);
+        }
+
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 1rem;
+            right: 1rem;
+            height: 2px;
+            background: var(--primary-color);
+        }
+
+        .dropdown-menu {
+            border: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-radius: 10px;
+        }
+
+        .dropdown-item {
+            padding: 0.75rem 1.5rem;
+        }
+
+        .dropdown-item:hover {
+            background-color: rgba(21, 101, 192, 0.1);
+            color: var(--primary-color);
+        }
+
+        .dropdown-item i {
+            width: 1.25rem;
+            text-align: center;
+        }
+
+        .btn {
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+
+        .card {
+            border: none;
+            border-radius: 1rem;
+        }
+
+        .form-control {
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+        }
+
+        .form-select {
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            background-position: right 1rem center;
+        }
+
+        /* Flash Messages */
+        .flash-messages {
+            position: fixed;
+            top: calc(var(--nav-height) + 1rem);
+            right: 1rem;
+            z-index: 1050;
+        }
+
+        .alert {
+            border: none;
+            border-radius: 10px;
+            padding: 1rem 3rem 1rem 1rem;  /* Added right padding for close button */
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-width: 400px;
+            position: relative;  /* For close button positioning */
+            backdrop-filter: blur(10px);
+        }
+
+        .alert .btn-close {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 0.5rem;
+            width: 1.5em;
+            height: 1.5em;
+            background: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ff0000'%3e%3cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z'/%3e%3c/svg%3e") center/1em auto no-repeat !important;
+            border: none;
+            opacity: 0.8;
+            transition: all 0.3s ease;
+            box-sizing: content-box;
+            cursor: pointer;
+        }
+
+        .alert .btn-close:hover {
+            opacity: 1;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        /* Special handling for warning alerts since they have dark text */
+        .alert-warning .btn-close {
+            background: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ff0000'%3e%3cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z'/%3e%3c/svg%3e") center/1em auto no-repeat;
+        }
+
+        /* Dark mode compatibility */
+        body.dark-mode .alert .btn-close {
+            background: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ff0000'%3e%3cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z'/%3e%3c/svg%3e") center/1em auto no-repeat;
+            opacity: 0.8;
+        }
+
+        .alert-success {
+            background-color: rgba(25, 135, 84, 0.95);
+            color: white;
+        }
+
+        .alert-danger {
+            background-color: rgba(220, 53, 69, 0.95);
+            color: white;
+        }
+
+        .alert-warning {
+            background-color: rgba(255, 193, 7, 0.95);
+            color: #000;
+        }
+
+        .alert-info {
+            background-color: rgba(13, 202, 240, 0.95);
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .navbar-nav {
+                padding: 1rem 0;
+            }
+
+            .nav-link.active::after {
+                display: none;
+            }
+        }
+
+        body.dark-mode {
+            background: var(--dark-bg) !important;
+            color: var(--dark-text) !important;
+        }
+
+        body.dark-mode .navbar {
+            background: var(--dark-card) !important;
+            color: var(--dark-text) !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        body.dark-mode .card,
+        body.dark-mode .modal-content {
+            background: var(--dark-card) !important;
+            color: var(--dark-text) !important;
+            border-color: var(--dark-border) !important;
+        }
+
+        body.dark-mode .form-control,
+        body.dark-mode .form-select {
+            background: var(--dark-input) !important;
+            color: var(--dark-text) !important;
+            border-color: var(--dark-border) !important;
+        }
+
+        body.dark-mode .dropdown-menu {
+            background: #23272b !important;
+            color: #e8eaed !important;
+        }
+        body.dark-mode .dropdown-item {
+            color: #e8eaed !important;
+        }
+        body.dark-mode .dropdown-item:hover {
+            background: #181a1b !important;
+            color: #fff !important;
+        }
+        body.dark-mode .btn,
+        body.dark-mode .btn-primary,
+        body.dark-mode .btn-outline-primary {
+            background: #23272b;
+            color: #e8eaed;
+            border-color: #444;
+        }
+        body.dark-mode .btn-primary {
+            background: #1565C0;
+            border-color: #1565C0;
+        }
+        body.dark-mode .btn-outline-primary {
+            background: transparent;
+            color: #90caf9;
+            border-color: #90caf9;
+        }
+        body.dark-mode .table {
+            color: #e8eaed;
+        }
+        body.dark-mode .bg-light,
+        body.dark-mode .bg-white {
+            background: #23272b !important;
+        }
+        body.dark-mode .alert {
+            background: #23272b !important;
+            color: #e8eaed !important;
+            border-color: #444 !important;
+        }
+        body.dark-mode .form-label,
+        body.dark-mode .text-muted {
+            color: #b0b3b8 !important;
+        }
+        body.dark-mode .border-bottom-0 {
+            border-bottom: none !important;
+        }
+        body.dark-mode .border-primary {
+            border-color: #90caf9 !important;
+        }
+        body.dark-mode .timeline-content {
+            background: #23272b !important;
+            color: #e8eaed !important;
+        }
+        body.dark-mode .nav-link,
+        body.dark-mode .navbar-brand,
+        body.dark-mode .nav-link i {
+            color: #e8eaed !important;
+        }
+        body.dark-mode .nav-link.active {
+            color: #90caf9 !important;
+        }
+        /* Add more dark mode overrides as needed */
+    </style>
+</head>
+<body class="h-100">
+    <!-- Navigation -->
+    {% if current_user.is_authenticated %}
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('dashboard') }}">
+                <i class="fas fa-graduation-cap me-2"></i>Attendance
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if request.endpoint == 'dashboard' }}" 
+                           href="{{ url_for('dashboard') }}">
+                            <i class="fas fa-home me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if request.endpoint == 'view_students' }}"
+                           href="{{ url_for('view_students') }}">
+                            <i class="fas fa-users me-1"></i>Students
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if request.endpoint == 'manage_classes' }}"
+                           href="{{ url_for('manage_classes') }}">
+                            <i class="fas fa-chalkboard-teacher me-1"></i>Classes
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                            <i class="fas fa-clipboard-check me-1"></i>Attendance
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('mark_attendance_manual') }}">
+                                    <i class="fas fa-pen me-2"></i>Mark Manual
+                                </a>
+                            </li>                            <li>
+                                <a class="dropdown-item" href="{{ url_for('mark_attendance_image') }}">
+                                    <i class="fas fa-camera me-2"></i>Mark with Image
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('live_attendance') }}">
+                                    <i class="fas fa-video me-2"></i>Mark with Webcam
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('view_attendance') }}">
+                                    <i class="fas fa-chart-bar me-2"></i>View Records
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    <!-- Dark Mode Toggle -->
+                    <li class="nav-item d-flex align-items-center">
+                        <button id="themeToggle" class="btn btn-link nav-link px-2" style="font-size:1.5rem;" title="Toggle dark mode">
+                            <span id="themeIcon">🌙</span>
+                        </button>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="dropdown">
+                            <span class="me-2">
+                                {% if current_user.photo_path and (current_user.photo_path|length > 0) %}
+                                    <img src="{{ url_for('static', filename=current_user.photo_path) }}" alt="Profile Photo" class="rounded-circle" style="width:32px;height:32px;object-fit:cover;">
+                                {% else %}
+                                    <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white" style="width:32px;height:32px;">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                {% endif %}
+                            </span>
+                            <span>{{ current_user.username }}</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('profile') }}">
+                                    <i class="fas fa-user me-2"></i>Profile
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('change_password') }}">
+                                    <i class="fas fa-key me-2"></i>Change Password
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="{{ url_for('logout') }}">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    <!-- Flash Messages -->
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {% if category == 'success' %}
+                            <i class="fas fa-check-circle me-2"></i>
+                        {% elif category == 'danger' %}
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                        {% elif category == 'warning' %}
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                        {% elif category == 'info' %}
+                            <i class="fas fa-info-circle me-2"></i>
+                        {% endif %}
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content -->
+    {% block content %}{% endblock %}
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPath = window.location.pathname;
+            document.querySelectorAll('.nav-link').forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                }
+            });
+
+            // Theme toggle with immediate effect
+            const themeToggle = document.getElementById('themeToggle');
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function() {
+                    setTheme(!document.body.classList.contains('dark-mode'));
+                });
+                // On load, set theme from localStorage
+                const saved = localStorage.getItem('theme');
+                setTheme(saved === 'dark');
+            }
+
+            // Auto-dismiss alerts after 8 seconds
+            document.querySelectorAll('.alert').forEach(alert => {
+                setTimeout(() => {
+                    // Create and dispatch a click event on the close button
+                    const closeBtn = alert.querySelector('.btn-close');
+                    if (closeBtn) {
+                        const fadeOut = setInterval(() => {
+                            if (!alert.style.opacity) alert.style.opacity = 1;
+                            if (alert.style.opacity > 0) {
+                                alert.style.opacity -= 0.1;
+                            } else {
+                                clearInterval(fadeOut);
+                                closeBtn.click();
+                            }
+                        }, 50);
+                    }
+                }, 8000); // 8 seconds
+            });
+        });
+
+        function setTheme(dark) {
+            if (dark) {
+                document.body.classList.add('dark-mode');
+                localStorage.setItem('theme', 'dark');
+                document.getElementById('themeIcon').textContent = '☀️';
+            } else {
+                document.body.classList.remove('dark-mode');
+                localStorage.setItem('theme', 'light');
+                document.getElementById('themeIcon').textContent = '🌙';
+            }
+        }
+    </script>
+</body>
+</html>

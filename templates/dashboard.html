@@ -1,0 +1,488 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-background"></div>
+<div class="container py-4">
+    <!-- Welcome Block -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="welcome-card">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <div class="welcome-avatar me-4">
+                                <i class="fas fa-user-circle"></i>
+                            </div>
+                            <div>
+                                <h3 class="mb-1 welcome-title">Welcome back, {{ username }}!</h3>
+                                <p class="mb-0 welcome-subtitle">Manage your class attendance efficiently</p>
+                            </div>
+                        </div>
+                        <div class="d-none d-md-block">
+                            <div class="current-time">
+                                <i class="far fa-clock me-2"></i>
+                                <span id="currentTime"></span>
+                            </div>
+                            <div class="current-date">
+                                <i class="far fa-calendar-alt me-2"></i>
+                                <span id="currentDate"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analytics Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm text-center">
+                <div class="card-body analytics-card">
+                    <div class="stats-icon">✅</div>
+                    <h5 class="card-title">Total Students</h5>
+                    <div class="fs-3 fw-bold">{{ total_students or 0 }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm text-center">
+                <div class="card-body analytics-card">
+                    <div class="stats-icon success">🟢</div>
+                    <h5 class="card-title">Attendance % This Month</h5>
+                    <div class="fs-3 fw-bold">{{ attendance_percent or 0 }}%</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm text-center">
+                <div class="card-body analytics-card">
+                    <div class="stats-icon danger">🔴</div>
+                    <h5 class="card-title">Absent Today</h5>
+                    <div class="fs-3 fw-bold">{{ absent_today or 0 }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm text-center">
+                <div class="card-body analytics-card">
+                    <div class="stats-icon info">📸</div>
+                    <h5 class="card-title">Image Accuracy %</h5>
+                    <div class="fs-3 fw-bold">{{ image_accuracy or 0 }}%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100">
+                <div class="card-body text-center p-4">
+                    <i class="fas fa-chalkboard-teacher fa-3x text-success mb-3"></i>
+                    <h4 class="card-title mb-3">Class Management</h4>
+                    <p class="card-text text-muted mb-4">Create and manage your classes</p>
+                    <a href="{{ url_for('manage_classes') }}" class="btn btn-success w-100">
+                        <i class="fas fa-plus-circle me-2"></i>Manage Classes
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100">
+                <div class="card-body text-center p-4">
+                    <i class="fas fa-user-graduate fa-3x text-primary mb-3"></i>
+                    <h4 class="card-title mb-3">Student Registration</h4>
+                    <p class="card-text text-muted mb-4">Add new students to the system</p>
+                    <a href="{{ url_for('register_student') }}" class="btn btn-primary w-100">
+                        <i class="fas fa-user-plus me-2"></i>Register Student
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100">
+                <div class="card-body text-center p-4">
+                    <i class="fas fa-users fa-3x text-info mb-3"></i>
+                    <h4 class="card-title mb-3">View Students</h4>
+                    <p class="card-text text-muted mb-4">Manage registered students</p>
+                    <a href="{{ url_for('view_students') }}" class="btn btn-info w-100 text-white">
+                        <i class="fas fa-list me-2"></i>View Students
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100">
+                <div class="card-body text-center p-4">
+                    <i class="fas fa-clipboard-check fa-3x text-warning mb-3"></i>
+                    <h4 class="card-title mb-3">Manual Attendance</h4>
+                    <p class="card-text text-muted mb-4">Mark attendance manually</p>
+                    <a href="{{ url_for('mark_attendance_manual') }}" class="btn btn-warning w-100 text-white">
+                        <i class="fas fa-check-circle me-2"></i>Mark Manual
+                    </a>
+                </div>
+            </div>
+        </div>        <div class="col-md-6 col-lg-4">
+            <div class="card h-100">
+                <div class="card-body text-center p-4">
+                    <i class="fas fa-camera fa-3x text-danger mb-3"></i>
+                    <h4 class="card-title mb-3">Image Attendance</h4>
+                    <p class="card-text text-muted mb-4">Mark attendance using images</p>
+                    <a href="{{ url_for('mark_attendance_image') }}" class="btn btn-danger w-100">
+                        <i class="fas fa-image me-2"></i>Mark with Image
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100">
+                <div class="card-body text-center p-4">
+                    <i class="fas fa-video fa-3x text-info mb-3"></i>
+                    <h4 class="card-title mb-3">Webcam Attendance</h4>
+                    <p class="card-text text-muted mb-4">Mark attendance using live webcam</p>
+                    <a href="{{ url_for('live_attendance') }}" class="btn btn-info w-100 text-white">
+                        <i class="fas fa-video me-2"></i>Mark with Webcam
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100">
+                <div class="card-body text-center p-4">
+                    <i class="fas fa-chart-bar fa-3x text-purple mb-3"></i>
+                    <h4 class="card-title mb-3">View Attendance</h4>
+                    <p class="card-text text-muted mb-4">Check attendance records</p>
+                    <a href="{{ url_for('view_attendance') }}" class="btn btn-purple w-100">
+                        <i class="fas fa-history me-2"></i>View Records
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    body {
+        background: #fafafa;  /* Changed to off-white */
+    }
+
+    body.dark-mode {
+        background: #121212 !important;
+    }
+
+    .dashboard-background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(250, 250, 250, 0.95), #fff);  /* Updated to off-white gradient */
+        z-index: -1;
+        transition: background 0.3s ease;
+    }
+
+    body.dark-mode .dashboard-background {
+        background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), #1a1a1a);
+    }
+
+    .welcome-card {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .welcome-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 300px;
+        height: 100%;
+        background: linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0.2));
+        clip-path: polygon(100% 0, 0% 100%, 100% 100%);
+    }
+
+    .welcome-avatar {
+        width: 64px;
+        height: 64px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: white;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        animation: float 3s ease-in-out infinite;
+    }
+
+    .welcome-title {
+        color: white;
+        font-size: 1.75rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .welcome-subtitle {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 1rem;
+    }
+
+    .current-time, .current-date {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .card {
+        border: none;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+    }
+
+    body.dark-mode .card {
+        background: rgba(32, 32, 32, 0.95);
+        color: #e0e0e0;
+    }
+
+    body.dark-mode .card-title {
+        color: #e0e0e0;
+    }
+
+    body.dark-mode .text-muted {
+        color: #a0a0a0 !important;
+    }
+
+    .stats-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        width: 64px;
+        height: 64px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        border-radius: 50%;
+        background: rgba(0,0,0,0.03);
+    }
+
+    .stats-icon.success {
+        color: #198754;
+        background: rgba(25, 135, 84, 0.1);
+    }
+
+    .stats-icon.danger {
+        color: #dc3545;
+        background: rgba(220, 53, 69, 0.1);
+    }
+
+    .stats-icon.info {
+        color: #0dcaf0;
+        background: rgba(13, 202, 240, 0.1);
+    }
+
+    body.dark-mode .stats-icon {
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .analytics-card {
+        position: relative;
+        overflow: hidden;
+        padding: 1.5rem;
+    }
+
+    .analytics-card::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(45deg, rgba(0,0,0,0.02), rgba(0,0,0,0.05));
+        clip-path: polygon(100% 0, 0% 100%, 100% 100%);
+    }
+
+    body.dark-mode .analytics-card::after {
+        background: linear-gradient(45deg, rgba(255,255,255,0.02), rgba(255,255,255,0.05));
+    }
+
+    .card-title {
+        color: #495057;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.75rem;
+    }
+
+    .fs-3 {
+        font-weight: 700;
+        color: #1a1a1a;
+    }
+
+    body.dark-mode .fs-3 {
+        color: #e0e0e0;
+        background: none;
+        -webkit-text-fill-color: #e0e0e0;
+    }
+
+    .btn {
+        text-transform: none;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .fa-3x {
+        transition: all 0.3s ease;
+    }
+
+    .card:hover .fa-3x {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
+    }
+
+    .btn-purple {
+        background: linear-gradient(135deg, #7952b3, #614092);
+        color: white;
+        border: none;
+    }
+    
+    .btn-purple:hover {
+        background: linear-gradient(135deg, #614092, #4c3275);
+        color: white;
+    }
+    
+    .text-purple {
+        color: #7952b3;
+    }
+
+    /* Enhancing Analytics Cards */
+    .display-5 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline-block;
+    }
+
+    .card-title {
+        color: #495057;
+        font-size: 1rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .fs-3 {
+        font-weight: 700;
+        background: linear-gradient(135deg, #1a1a1a, #4a4a4a);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    body.dark-mode .btn-success,
+    body.dark-mode .btn-primary,
+    body.dark-mode .btn-info,
+    body.dark-mode .btn-warning,
+    body.dark-mode .btn-danger,
+    body.dark-mode .btn-purple {
+        color: #fff !important;
+        border: none;
+    }
+
+    body.dark-mode .btn-success {
+        background: #198754 !important;
+    }
+
+    body.dark-mode .btn-primary {
+        background: #1565C0 !important;
+    }
+
+    body.dark-mode .btn-info {
+        background: #0dcaf0 !important;
+    }
+
+    body.dark-mode .btn-warning {
+        background: #ffc107 !important;
+    }
+
+    body.dark-mode .btn-danger {
+        background: #dc3545 !important;
+    }
+
+    body.dark-mode .btn-purple {
+        background: linear-gradient(135deg, #7952b3, #614092) !important;
+    }
+
+    body.dark-mode .btn:hover {
+        transform: translateY(-2px);
+        filter: brightness(110%);
+    }
+
+    body.dark-mode .card-text.text-muted {
+        color: #a0a0a0 !important;
+    }
+
+    @media (max-width: 768px) {
+        .welcome-title {
+            font-size: 1.5rem;
+        }
+        
+        .welcome-avatar {
+            width: 48px;
+            height: 48px;
+            font-size: 1.5rem;
+        }
+    }
+</style>
+
+<script>
+    function updateDateTime() {
+        const now = new Date();
+        
+        // Update time
+        const timeElement = document.getElementById('currentTime');
+        timeElement.textContent = now.toLocaleTimeString('en-US', { 
+            hour: '2-digit', 
+            minute: '2-digit'
+        });
+        
+        // Update date
+        const dateElement = document.getElementById('currentDate');
+        dateElement.textContent = now.toLocaleDateString('en-US', { 
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    }
+
+    // Update immediately and then every second
+    updateDateTime();
+    setInterval(updateDateTime, 1000);
+</script>
+{% endblock %}

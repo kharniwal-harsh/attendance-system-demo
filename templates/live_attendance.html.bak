@@ -1,0 +1,598 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-video fa-2x me-3"></i>
+                    <div>
+                        <h3 class="mb-0">Live Webcam Attendance</h3>
+                        <p class="mb-0 opacity-75">Mark attendance using webcam</p>
+                    </div>
+                </div>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-light">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <div class="card-body p-4">
+            <!-- Class Selection -->
+            <div class="class-select mb-4">
+                <form method="GET" action="{{ url_for('live_attendance') }}" class="needs-validation" novalidate>
+                    <div class="row align-items-end">
+                        <div class="col-md-8">
+                            <label class="form-label">
+                                <i class="fas fa-chalkboard-teacher me-2"></i>Select Class
+                            </label>
+                            <select name="class_id" id="class_id" class="form-select form-select-lg" required onchange="this.form.submit()">
+                                <option value="">Choose a class...</option>
+                                {% for class in classes %}
+                                <option value="{{ class._id }}" {% if selected_class == class._id|string %}selected{% endif %}>
+                                    {{ class.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-primary btn-lg w-100">
+                                <i class="fas fa-sync-alt me-2"></i>Load Class
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            {% if selected_class %}            <div class="webcam-container">
+                <div class="row mb-4">
+                    <div class="col-lg-8">
+                        <div class="video-container bg-light rounded">
+                            <video id="webcam" autoplay playsinline class="w-100 rounded"></video>
+                            <!-- Webcam Permission Error Modal -->
+                            <div id="webcamError" class="webcam-error-overlay" style="display: none;">
+                                <div class="error-content text-center">
+                                    <i class="fas fa-video-slash fa-3x mb-3"></i>
+                                    <h4>Camera Access Required</h4>
+                                    <p id="errorMessage" class="mb-3">Could not access webcam. Please ensure it is connected and permissions are granted.</p>
+                                    <div class="troubleshooting-steps text-start">
+                                        <p class="fw-bold mb-2">Troubleshooting Steps:</p>
+                                        <ol class="small">
+                                            <li>Check if your camera is properly connected</li>
+                                            <li>Allow camera access in your browser settings:
+                                                <ul>
+                                                    <li>Click the camera icon in your browser's address bar</li>
+                                                    <li>Select "Allow" for camera access</li>
+                                                </ul>
+                                            </li>
+                                            <li>Close other applications that might be using the camera</li>
+                                            <li>Try refreshing the page</li>
+                                        </ol>
+                                    </div>
+                                    <button onclick="retryWebcam()" class="btn btn-primary mt-3">
+                                        <i class="fas fa-redo me-2"></i>Retry Camera Access
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="recognition-status card h-100">
+                            <div class="card-body">
+                                <h5><i class="fas fa-user-check me-2"></i>Recognition Status</h5>
+                                <div id="recognizedStudents" class="mt-3">
+                                    <!-- Recognized students will appear here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center">            <button id="startBtn" class="btn btn-success btn-lg me-2">
+                        <i class="fas fa-play me-2"></i>Start Recognition
+                    </button>
+                    <button id="stopBtn" class="btn btn-danger btn-lg me-2" style="display: none;">
+                        <i class="fas fa-stop me-2"></i>Stop Recognition
+                    </button>
+                    <button id="saveBtn" class="btn btn-primary btn-lg" disabled>
+                        <i class="fas fa-save me-2"></i>Save Attendance
+                    </button>
+                    <div id="webcamError" class="alert alert-danger mt-3" style="display: none;">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <span id="errorMessage"></span>
+                        <div class="mt-2">
+                            <small>
+                                Troubleshooting tips:
+                                <ul class="mb-0">
+                                    <li>Ensure your camera is properly connected</li>
+                                    <li>Allow camera access in your browser settings</li>
+                                    <li>Close other applications that might be using the camera</li>
+                                    <li>Try refreshing the page</li>
+                                </ul>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-video fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">Select a Class</h4>
+                <p class="mb-0">Choose a class to start webcam attendance</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.video-container {
+    position: relative;
+    min-height: 400px;
+    background: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #dee2e6;
+}
+
+.webcam-error-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.95);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    z-index: 1000;
+}
+
+.error-content {
+    max-width: 500px;
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.troubleshooting-steps {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 4px;
+    margin-top: 1rem;
+}
+
+.recognition-status {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+}
+
+.recognized-student {
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    background: #fff;
+    border-radius: 0.5rem;
+    border: 1px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.class-select {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 1.5rem;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let stream;
+    let isRecognizing = false;
+    const recognizedStudents = new Set();
+    const video = document.getElementById('webcam');
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const saveBtn = document.getElementById('saveBtn');
+    const recognizedList = document.getElementById('recognizedStudents');
+    const webcamErrorOverlay = document.getElementById('webcamError');
+    const errorMessageElem = document.getElementById('errorMessage');
+    
+    // Function to handle webcam retry
+    async function retryWebcam() {
+        console.log("Retrying webcam access...");
+        webcamErrorOverlay.style.display = 'none';
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+        }
+        video.srcObject = null;
+        try {
+            await startWebcam();
+            console.log("Webcam retry successful");
+        } catch (err) {
+            console.error("Webcam retry failed:", err);
+        }
+    }
+    
+    // Add event listener to retry button
+    const retryButton = document.querySelector('button[onclick="retryWebcam()"]');
+    if (retryButton) {
+        retryButton.removeAttribute('onclick');
+        retryButton.addEventListener('click', retryWebcam);
+    }
+
+    // Function to show error with troubleshooting steps    function showWebcamError(message, details = []) {
+        webcamErrorOverlay.style.display = 'flex';
+        errorMessageElem.textContent = message;
+        
+        // Add any specific troubleshooting steps
+        const troubleshootingList = webcamErrorOverlay.querySelector('.troubleshooting-steps ol');
+        troubleshootingList.innerHTML = details.map(step => `<li>${step}</li>`).join('');
+        
+        // Make sure retry button is visible and enabled
+        const retryBtn = webcamErrorOverlay.querySelector('button');
+        if (retryBtn) {
+            retryBtn.style.display = 'inline-block';
+            retryBtn.disabled = false;
+        }
+    }
+
+    // Function to validate browser compatibility and requirements
+    function checkBrowserCompatibility() {
+        // Check if browser supports getUserMedia
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            showWebcamError(
+                'Your browser does not support webcam access.',
+                [
+                    'Use a modern browser like Chrome, Firefox, or Edge',
+                    'Update your browser to the latest version',
+                    'Try using a different browser'
+                ]
+            );
+            return false;
+        }
+
+        // Check if running in secure context (HTTPS or localhost)
+        if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+            showWebcamError(
+                'Webcam access requires a secure connection.',
+                [
+                    'Access this page using HTTPS',
+                    'If testing locally, use localhost'
+                ]
+            );
+            return false;
+        }
+
+        return true;
+    }
+
+    if (!checkBrowserCompatibility()) {
+        if (startBtn) startBtn.disabled = true;
+        return;
+    }    async function startWebcam() {
+        console.log("Starting webcam...");
+        try {
+            // First check if any webcam is available
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const videoDevices = devices.filter(device => device.kind === 'videoinput');
+            
+            console.log(`Found ${videoDevices.length} video devices`);
+            
+            if (videoDevices.length === 0) {
+                showWebcamError(
+                    'No webcam detected on your device.',
+                    [
+                        'Connect a webcam to your device',
+                        'If using a laptop, ensure the built-in webcam is not disabled',
+                        'Try using an external USB webcam'
+                    ]
+                );
+                return;
+            }
+
+            // Reset error overlay if previously shown
+            webcamErrorOverlay.style.display = 'none';            console.log("Requesting webcam access...");
+            // Request webcam access with optimal constraints
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 },
+                    facingMode: 'user',
+                    aspectRatio: { ideal: 16/9 }
+                }
+            });
+
+            console.log("Webcam access granted, setting up video element...");
+            // Set up video element
+            video.srcObject = stream;
+            video.onerror = (err) => {
+                console.error('Video element error:', err);
+                showWebcamError(
+                    'Error displaying webcam feed',
+                    [
+                        'Refresh the page and try again',
+                        'Check if your webcam is properly connected',
+                        'Try using a different browser'
+                    ]
+                );
+            };            console.log("Waiting for video to be ready...");
+            // Wait for video to be ready
+            await new Promise((resolve, reject) => {
+                video.onloadedmetadata = () => {
+                    console.log("Video metadata loaded");
+                    resolve();
+                };
+                video.onerror = (e) => {
+                    console.error("Video loading error:", e);
+                    reject(e);
+                };
+                // Add a timeout
+                setTimeout(() => reject(new Error("Video loading timeout")), 10000);
+            });
+
+            console.log("Starting video playback...");
+            try {
+                await video.play();
+                console.log("Video playback started successfully");
+                
+                // Hide error overlay if it was showing
+                webcamErrorOverlay.style.display = 'none';
+                
+                // Enable/disable appropriate buttons
+                if (startBtn) {
+                    startBtn.disabled = false;
+                    startBtn.style.display = 'none';
+                }
+                if (stopBtn) stopBtn.style.display = 'inline-block';
+            
+        } catch (err) {
+            console.error('Error accessing webcam:', err);
+            let message = 'Could not access webcam. ';
+            let steps = [];
+            
+            switch(err.name) {
+                case 'NotAllowedError':
+                case 'PermissionDeniedError':
+                    message += 'Camera permission was denied.';
+                    steps = [
+                        'Click the camera icon in your browser\'s address bar',
+                        'Select "Allow" for camera access',
+                        'Refresh the page after allowing access'
+                    ];
+                    break;
+                    
+                case 'NotReadableError':
+                case 'TrackStartError':
+                    message += 'Cannot access your webcam.';
+                    steps = [
+                        'Close other applications that might be using the camera (Zoom, Teams, etc.)',
+                        'Restart your browser',
+                        'Try unplugging and reconnecting your webcam'
+                    ];
+                    break;
+                    
+                case 'OverconstrainedError':
+                    message += 'Your webcam doesn\'t support the required quality settings.';
+                    steps = [
+                        'Try using a different webcam',
+                        'Update your webcam drivers'
+                    ];
+                    break;
+                    
+                default:
+                    message += 'An unexpected error occurred.';
+                    steps = [
+                        'Check if your webcam is properly connected',
+                        'Restart your browser',
+                        'Try using a different browser',
+                        'Update your browser to the latest version'
+                    ];
+            }
+            
+            showWebcamError(message, steps);
+            if (startBtn) startBtn.disabled = false;
+            if (stopBtn) stopBtn.style.display = 'none';
+            throw err;
+        }
+    }    async function retryWebcam() {
+        // Reset error state
+        webcamErrorOverlay.style.display = 'none';
+        if (startBtn) startBtn.disabled = true;
+        
+        try {
+            // Stop any existing stream
+            stopWebcam();
+            
+            // Try to start webcam again
+            await startWebcam();
+            
+            // If successful, reset UI
+            if (startBtn) {
+                startBtn.style.display = 'inline-block';
+                startBtn.disabled = false;
+            }
+            if (stopBtn) stopBtn.style.display = 'none';
+            if (saveBtn) saveBtn.disabled = true;
+            
+        } catch (err) {
+            console.error('Retry failed:', err);
+            // Error handling is done in startWebcam()
+        }
+    }
+
+    function stopWebcam() {
+        if (stream) {
+            stream.getTracks().forEach(track => {
+                track.stop();
+                stream.removeTrack(track);
+            });
+            video.srcObject = null;
+            stream = null;
+        }
+        
+        // Reset recognition state
+        isRecognizing = false;
+        recognizedStudents.clear();
+        if (recognizedList) recognizedList.innerHTML = '';
+    }
+
+    if (startBtn) {
+        startBtn.addEventListener('click', async function() {
+            await startWebcam();
+            startBtn.style.display = 'none';
+            stopBtn.style.display = 'inline-block';
+            saveBtn.disabled = false;
+            isRecognizing = true;
+            startRecognition();
+        });
+    }
+
+    if (stopBtn) {
+        stopBtn.addEventListener('click', function() {
+            stopWebcam();
+            stopBtn.style.display = 'none';
+            startBtn.style.display = 'inline-block';
+            isRecognizing = false;
+        });
+    }
+
+    if (saveBtn) {
+        saveBtn.addEventListener('click', async function() {
+            if (recognizedStudents.size === 0) {
+                alert('No students have been recognized yet.');
+                return;
+            }
+
+            const classId = document.getElementById('class_id').value;
+            const response = await fetch('/save_live_attendance', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    class_id: classId,
+                    recognized_students: Array.from(recognizedStudents)
+                })
+            });
+
+            if (response.ok) {
+                alert('Attendance saved successfully!');
+                window.location.href = '/dashboard';
+            } else {
+                alert('Error saving attendance. Please try again.');
+            }
+        });
+    }    async function startRecognition() {
+        console.log("Starting face recognition...");
+        const classId = document.getElementById('class_id').value;
+        let consecutiveErrors = 0;
+        const MAX_CONSECUTIVE_ERRORS = 3;
+        
+        while (isRecognizing) {
+            try {
+                // Capture frame
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                canvas.getContext('2d').drawImage(video, 0, 0);
+                
+                console.log("Capturing frame...");
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg'));
+                const formData = new FormData();
+                formData.append('frame', blob);
+                formData.append('class_id', classId);
+
+                // Send frame to server
+                console.log("Sending frame to server...");
+                const response = await fetch('/process_frame', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                console.log("Server response:", result);
+                
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+                
+                // Process recognized students
+                if (result.recognized_students) {
+                    result.recognized_students.forEach(student => {
+                        if (!recognizedStudents.has(student.roll_no)) {
+                            console.log("New student recognized:", student.name);
+                            recognizedStudents.add(student.roll_no);
+                            updateRecognizedList(student);
+                        }
+                    });
+                    // Reset error counter on success
+                    consecutiveErrors = 0;
+                }
+
+            } catch (error) {
+                console.error('Error processing frame:', error);
+                consecutiveErrors++;
+                
+                if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
+                    console.error('Too many consecutive errors, stopping recognition');
+                    showWebcamError(
+                        'Face recognition process encountered multiple errors',
+                        [
+                            'Check your internet connection',
+                            'Ensure the webcam is working properly',
+                            'Try refreshing the page',
+                            'Make sure MongoDB Atlas is accessible'
+                        ]
+                    );
+                    isRecognizing = false;
+                    if (startBtn) startBtn.style.display = 'inline-block';
+                    if (stopBtn) stopBtn.style.display = 'none';
+                    break;
+                }
+            }
+
+            // Wait before next frame
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+    }
+
+    function updateRecognizedList(student) {
+        const div = document.createElement('div');
+        div.className = 'recognized-student';
+        div.innerHTML = `
+            <span><i class="fas fa-user-check text-success me-2"></i>${student.name} (${student.roll_no})</span>
+            <span class="badge bg-success">Present</span>
+        `;
+        recognizedList.appendChild(div);
+    }
+
+    // Handle page visibility changes
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            // Stop webcam when page is not visible
+            if (isRecognizing) {
+                stopWebcam();
+                if (startBtn) startBtn.style.display = 'inline-block';
+                if (stopBtn) stopBtn.style.display = 'none';
+                showWebcamError(
+                    'Webcam stopped due to page becoming inactive.',
+                    ['Click "Retry Camera Access" to resume']
+                );
+            }
+        }
+    });
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', function() {
+        stopWebcam();
+    });
+});
+</script>
+{% endblock %}
