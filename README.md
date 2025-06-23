@@ -2,6 +2,65 @@
 
 A modern face recognition-based attendance management system for educational institutions. This project is ideal for college projects and demonstrates role-based access, intuitive management, and accurate identification using multiple images.
 
+## Project Screenshots
+
+Below are screenshots of the main features and pages of the project:
+
+1. **Landing Page**
+   
+   ![Landing Page](project%20pic/landing_page.png)
+   > The welcoming landing page introduces the system and its features.
+
+2. **Login Page**
+   
+   ![Login Page](project%20pic/login_page.png)
+   > Secure login for administrators and lecturers.
+
+3. **Dashboard Page**
+   
+   ![Dashboard Page](project%20pic/dashboard_page.png)
+   > Overview of attendance statistics and quick access to management features.
+
+4. **Profile Page**
+   
+   ![Profile Page](project%20pic/profile_page.png)
+   > User profile management for updating personal details and password.
+
+5. **Create Class Page**
+   
+   ![Create Class Page](project%20pic/create_class_page.png)
+   > Interface for administrators to create and manage classes.
+
+6. **Register Student Page**
+   
+   ![Register Student Page](project%20pic/register_student_page.png)
+   > Add new students and capture multiple images for face recognition.
+
+7. **View Students Page**
+   
+   ![View Students Page](project%20pic/view_students_page.png)
+   > List and manage all registered students in the system.
+
+8. **Manual Attendance Page**
+   
+   ![Manual Attendance Page](project%20pic/manual_attendance_page.png)
+   > Mark attendance manually for students in a class.
+
+9. **Image-based Attendance Page**
+   
+   ![Image-based Attendance Page](project%20pic/imagebased_attendance_page.png)
+   > Mark attendance by uploading or capturing student images.
+
+10. **Webcam Attendance Page**
+   
+   ![Webcam Attendance Page](project%20pic/live_webcam_attendance_page.png)
+   > Take attendance using live webcam face recognition.
+
+11. **View Attendance Page**
+   
+   ![View Attendance Page](project%20pic/view%20attendance_page.png)
+   > View and export attendance records for analysis.
+
 ## Features
 
 1. **Role-based access** for administrators and lecturers.
