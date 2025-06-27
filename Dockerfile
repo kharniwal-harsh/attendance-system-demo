@@ -10,8 +10,10 @@ WORKDIR /app
 COPY . /app
 
 RUN python -m pip install --upgrade pip
-RUN pip install wheel setuptools cmake numpy==1.24.3
+# Install Python cmake module first
+RUN pip install cmake
 
+# Now install the rest of your requirements
 RUN pip install -r requirements.txt
 
 CMD ["gunicorn", "app:app"]
