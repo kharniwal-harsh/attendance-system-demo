@@ -10,10 +10,9 @@ WORKDIR /app
 COPY . /app
 
 RUN python -m pip install --upgrade pip
-# Install Python cmake module first
-RUN pip install cmake
-
-# Now install the rest of your requirements
-RUN pip install -r requirements.txt
+# Install Python cmake module and dlib in the same layer
+RUN pip install cmake && pip install dlib
+# Now install the rest of your requirements (excluding dlib)
+RUN pip install --no-deps -r requirements.txt
 
 CMD ["gunicorn", "app:app"]
