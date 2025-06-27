@@ -1,6 +1,1 @@
-python3-dev
-cmake
-libsm6
-libxext6
-libxrender-dev
-libglib2.0-0
+# Aptfile intentionally left empty. All system packages are installed via render.yaml buildCommand.
