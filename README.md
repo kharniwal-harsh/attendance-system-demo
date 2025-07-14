@@ -2,7 +2,7 @@
 
 [![View Live Demo](https://img.shields.io/badge/View-Live%20Demo-blue?style=for-the-badge)](https://kharniwal-harsh.github.io/attendance-system-demo/)
 
-A modern face recognition-based attendance management system for educational institutions. This project is ideal for college projects and demonstrates role-based access, intuitive management, and accurate identification using multiple images.
+A modern face recognition-based attendance management system for educational institutions. This project is ideal for college attendance system and demonstrates role-based access, intuitive management, and accurate identification using multiple images.
 
 ## Project Screenshots
 
@@ -70,7 +70,7 @@ Below are screenshots of the main features and pages of the project:
 3. **Capture and store multiple images** for accurate identification.
 4. **Export attendance records** to Excel.
 5. **User-friendly dashboard** for both admin and lecturer roles.
-6. **Great for college projects** and demonstrations.
+
 
 ## Project Structure
 
