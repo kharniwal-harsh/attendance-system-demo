@@ -1,4 +1,4 @@
-# Advanced Attendance System
+# Attendies – Smart Attendance Management System 🎓
 
 [![View Live Demo](https://img.shields.io/badge/View-Live%20Demo-blue?style=for-the-badge)](https://kharniwal-harsh.github.io/attendance-system-demo/)
 
