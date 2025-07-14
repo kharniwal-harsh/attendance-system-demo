@@ -2,7 +2,16 @@
 
 [![View Live Demo](https://img.shields.io/badge/View-Live%20Demo-blue?style=for-the-badge)](https://kharniwal-harsh.github.io/attendance-system-demo/)
 
-A modern face recognition-based attendance management system for educational institutions. This project is ideal for college attendance system and demonstrates role-based access, intuitive management, and accurate identification using multiple images.
+🚀 About the Project
+Attendies is a smart attendance management system that streamlines the process of taking attendance in classrooms using:
+
+🎥 Face recognition (via dlib & face_recognition) for live webcam or group photo attendance
+
+📝 Manual fallback marking to ensure no student is missed
+
+📊 Detailed dashboards with Excel export and notifications for low attendance
+
+Designed to reduce manual workload and save time for educators.
 
 ## Project Screenshots
 
@@ -123,22 +132,25 @@ Follow these steps to set up and run the project:
 - **Email:** `admin@gmail.com`
 - **Password:** `@admin_`
 
-Once logged in, you can:
-- Add students
-- Manage courses, units, and venues
+📚 Once logged in, you can:
+Add students (capture at least 5 clear face images)
 
-⚠️ **Important:**
-- Ensure to add at least two students and capture five clear images for each.
-- Poor image quality will affect recognition accuracy. You can retake any image by clicking on it.
+Create & manage classes
 
-### 2. Login as Lecturer
-- Create a lecturer account via the admin panel or use a pre-existing one.
-- Select lecture user type to be able to login as lecturer.
+Mark attendance via:
 
-If you have issues using this email and password, create your lecturer on the admin panel.
+📸 Live webcam face recognition
 
-- **Email:** `mark@gmail.com`
-- **Password:** `@mark_`
+🖼️ Uploading a group image
+
+✍️ Manual marking
+
+Export attendance to Excel
+
+Send notifications to students with <75% attendance
+
+⚠️ Important:
+Ensure to register students with multiple clear face images for best recognition results. Poor images may lead to low accuracy.
 
 As a lecturer:
 - Select a course, unit, and venue on the home page.
