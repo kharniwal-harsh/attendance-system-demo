@@ -13,7 +13,7 @@ Attendies is a smart attendance management system that streamlines the process o
 
 Designed to reduce manual workload and save time for educators.
 
-## Project Screenshots
+## 📸 Project Screenshots
 
 Below are screenshots of the main features and pages of the project:
 
@@ -81,7 +81,7 @@ Below are screenshots of the main features and pages of the project:
 5. **User-friendly dashboard** for both admin and lecturer roles.
 
 
-## Project Structure
+## 🗂️ Project Structure
 
 ```
 ├── app.py
@@ -103,7 +103,7 @@ Below are screenshots of the main features and pages of the project:
 └── ...
 ```
 
-## Setup Procedure
+## ⚙️ Setup Procedure
 
 Follow these steps to set up and run the project:
 
@@ -126,7 +126,7 @@ Follow these steps to set up and run the project:
      http://localhost/{your-project-folder-name}
      ```
 
-## User Guide
+## 👨‍💻 User Guide
 
 ### 1. Login as Administrator
 - **Email:** `admin@gmail.com`
